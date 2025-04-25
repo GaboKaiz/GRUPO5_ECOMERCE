@@ -1,175 +1,713 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luxora Market </title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luxora Market</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .cart-open { animation: slideIn 0.3s forwards; }
-        .fade-in { animation: fadeIn 0.5s forwards; }
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+      * {
+        font-family: "Inter", sans-serif;
+      }
+
+      /* Background Animation */
+      body {
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      .bg-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: radial-gradient(
+          circle,
+          rgba(79, 70, 229, 0.1) 0%,
+          transparent 70%
+        );
+        animation: pulse 15s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.3;
+        }
+      }
+
+      /* Animations */
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+        }
+        to {
+          transform: translateX(0);
+        }
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .cart-open {
+        animation: slideIn 0.3s forwards;
+      }
+      .modal-show {
+        animation: slideUp 0.4s ease-out;
+      }
+
+      /* Custom Styles */
+      .product-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .cart-icon:hover {
+        transform: scale(1.2);
+      }
+
+      #cart {
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .promo-banner {
+        background: linear-gradient(90deg, #4f46e5, #7c3aed);
+        color: white;
+        text-align: center;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        animation: fadeIn 1s ease-in;
+      }
+
+      .category-filter button,
+      .brand-filter button {
+        transition: background-color 0.3s, transform 0.2s;
+      }
+
+      .category-filter button:hover,
+      .brand-filter button:hover {
+        transform: scale(1.05);
+      }
+
+      .brand-filter img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+      }
+
+      .testimonials {
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+      }
+
+      .footer {
+        background: #1f2937;
+        color: white;
+        padding: 2rem 0;
+      }
+
+      .footer a {
+        color: #f59e0b;
+        transition: color 0.2s;
+      }
+
+      .footer a:hover {
+        color: #d97706;
+      }
     </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Encabezado -->
-    <header class="bg-[#131921] text-white p-4 sticky top-0 z-20 shadow-md">
-        <div class="container mx-auto flex items-center justify-between">
-            <h1 class="text-2xl font-bold">Luxora Market</h1>
-            <div class="flex-1 mx-4">
-                <input id="search-input" type="text" placeholder="Buscar productos..." class="w-full p-2 rounded-l-md border-none focus:ring-2 focus:ring-[#F08804] text-gray-900">
-            </div>
-            <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="toggleCart()">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span id="cart-count" class="absolute -top-2 -right-2 bg-[#F08804] text-white rounded-full px-2 py-1 text-xs font-bold">0</span>
-            </div>
+  </head>
+  <body>
+    <div class="bg-animation"></div>
+
+    <!-- Header -->
+    <header
+      class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white py-4 sticky top-0 z-20 shadow-lg"
+    >
+      <div class="container mx-auto px-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <img
+            src="logo.png"
+            alt="Luxora Market Logo"
+            class="w-12 h-12 object-contain"
+          />
+          <h1 class="text-2xl font-bold">Luxora Market</h1>
         </div>
+        <div class="flex-1 mx-4">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Buscar productos..."
+            class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+          />
+        </div>
+        <div
+          class="cart-icon relative cursor-pointer transition-transform z-30"
+          onclick="toggleCart()"
+        >
+          <i class="bx bx-cart text-3xl"></i>
+          <span
+            id="cart-count"
+            class="absolute -top-2 -right-2 bg-yellow-400 text-white rounded-full px-2 py-1 text-xs font-bold"
+            >0</span
+          >
+        </div>
+      </div>
     </header>
 
-    <!-- Carrito -->
-    <div id="cart" class="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 transform translate-x-full transition-transform duration-300 z-30">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-800">Carrito</h2>
-            <button onclick="toggleCart()" class="text-gray-600 hover:text-gray-800 text-xl font-bold">✕</button>
-        </div>
-        <div id="cart-items" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
-        <div class="mt-6 border-t pt-4">
-            <p class="text-lg font-bold text-gray-800">Total: S/ <span id="cart-total">0</span></p>
-            <button id="checkout-btn" class="w-full bg-[#00A862] text-white py-3 mt-4 rounded-md hover:bg-green-700 transition-colors font-semibold">Proceder al Pago</button>
-        </div>
+    <!-- Promotional Banner -->
+    <div class="promo-banner container mx-auto px-4">
+      <h2 class="text-2xl font-bold">
+        ¡Oferta Especial! 20% de Descuento en Electrónica
+      </h2>
+      <p class="mt-2">
+        Usa el código: LUXORA20 al pagar. ¡Solo por tiempo limitado!
+      </p>
     </div>
 
-    <!-- Mensaje de pago -->
-    <div id="payment-message" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-md">
-            <h2 class="text-2xl font-bold text-[#00A862] mb-4">¡Pago Exitoso!</h2>
-            <p class="text-gray-600 mb-6">Gracias por tu compra. Recibirás un correo con los detalles.</p>
-            <button onclick="closePaymentMessage()" class="bg-[#131921] text-white py-2 px-6 rounded-md hover:bg-blue-900 transition-colors">Cerrar</button>
-        </div>
+    <!-- Category Filter -->
+    <div class="category-filter container mx-auto px-4 mb-6 flex space-x-4">
+      <button
+        onclick="filterCategory('all')"
+        class="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+      >
+        Todos
+      </button>
+      <button
+        onclick="filterCategory('Electrónica')"
+        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+      >
+        Electrónica
+      </button>
+      <button
+        onclick="filterCategory('Teléfonos')"
+        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+      >
+        Celulares
+      </button>
+      <button
+        onclick="filterCategory('Computadoras')"
+        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+      >
+        Computadoras
+      </button>
+      <button
+        onclick="filterCategory('Fotografía')"
+        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+      >
+        Otros
+      </button>
     </div>
 
-    <!-- Productos -->
-    <main class="container mx-auto p-6">
-        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-        <div id="no-results" class="hidden text-center text-gray-600 text-lg mt-6">No se encontraron productos.</div>
+    <!-- Brand Filter (Hidden by Default) -->
+    <div
+      id="brand-filter"
+      class="brand-filter container mx-auto px-4 mb-6 hidden flex flex-wrap justify-center gap-4"
+    >
+      <button
+        onclick="filterBrand('iPhone')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="iphone.png" alt="Apple" />
+        <span class="mt-2 text-gray-800 font-medium">Apple</span>
+      </button>
+      <button
+        onclick="filterBrand('Samsung')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="sansung.png" alt="Samsung" />
+        <span class="mt-2 text-gray-800 font-medium">Samsung</span>
+      </button>
+      <button
+        onclick="filterBrand('Realme')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="realme.png" alt="Realme" />
+        <span class="mt-2 text-gray-800 font-medium">Realme</span>
+      </button>
+      <button
+        onclick="filterBrand('Redmi')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="redmi.png" alt="Redmi" />
+        <span class="mt-2 text-gray-800 font-medium">Redmi</span>
+      </button>
+      <button
+        onclick="filterBrand('Honor')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="honor.png" alt="Honor" />
+        <span class="mt-2 text-gray-800 font-medium">Honor</span>
+      </button>
+      <button
+        onclick="filterBrand('Motorola')"
+        class="flex flex-col items-center p-4 bg-gray-100 rounded-lg"
+      >
+        <img src="motorola.png" alt="Motorola" />
+        <span class="mt-2 text-gray-800 font-medium">Motorola</span>
+      </button>
+    </div>
+
+    <!-- Cart -->
+    <div
+      id="cart"
+      class="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 z-30"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Carrito</h2>
+        <button
+          id="cart-close"
+          class="text-gray-500 hover:text-gray-800 text-2xl"
+        >
+          ×
+        </button>
+      </div>
+      <div class="cart-container max-h-[60vh] overflow-y-auto">
+        <div id="cart-items"></div>
+      </div>
+      <div class="cart-total mt-6 pt-4 border-t border-gray-200">
+        <p class="text-lg font-bold text-gray-800">
+          Total: S/ <span id="cart-total">0</span>
+        </p>
+        <button
+          id="checkout-btn"
+          class="w-full mt-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+        >
+          Proceder al Pago
+        </button>
+      </div>
+    </div>
+
+    <!-- Purchase Confirmation -->
+    <div
+      id="purchase-confirmation"
+      class="hidden fixed top-4 right-4 bg-green-50 p-4 rounded-lg shadow-lg flex items-center space-x-2 z-10"
+    >
+      <p class="text-gray-800 text-sm">¡Compra realizada con éxito!</p>
+      <button
+        onclick="closeConfirmation()"
+        class="text-gray-500 hover:text-gray-800"
+      >
+        ×
+      </button>
+    </div>
+
+    <!-- Products -->
+    <main class="container mx-auto px-4 py-8">
+      <div
+        id="products"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      ></div>
+      <div
+        id="no-results"
+        class="hidden text-center text-gray-500 text-lg mt-8"
+      >
+        No se encontraron productos.
+      </div>
     </main>
 
-    <script src="Java.js">
-        let products = JSON.parse(localStorage.getItem('products')) || [
-            { id: 1, name: "Auriculares Bluetooth", price: 113.96, image: "https://via.placeholder.com/150", description: "Auriculares inalámbricos con gran calidad de sonido.", category: "Electrónica" },
-            { id: 2, name: "Smartphone 5G", price: 1899.96, image: "https://via.placeholder.com/150", description: "Teléfono de última generación con conectividad 5G.", category: "Teléfonos" },
-            { id: 3, name: "Laptop Ultraligera", price: 3799.96, image: "https://via.placeholder.com/150", description: "Laptop potente y ligera para trabajo y entretenimiento.", category: "Computadoras" },
-            { id: 4, name: "Cámara Digital", price: 759.96, image: "https://via.placeholder.com/150", description: "Cámara compacta con alta resolución.", category: "Fotografía" },
-        ];
-        let cart = [];
+    <!-- Testimonials -->
+    <section class="testimonials container mx-auto px-4">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        Lo que dicen nuestros clientes
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <p class="text-gray-600">
+            "¡Gran experiencia de compra! Los productos son de alta calidad y el
+            envío fue rápido."
+          </p>
+          <p class="mt-4 font-semibold text-gray-800">Ana G.</p>
+        </div>
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <p class="text-gray-600">
+            "El servicio al cliente es excepcional. Resolvieron todas mis dudas
+            rápidamente."
+          </p>
+          <p class="mt-4 font-semibold text-gray-800">Carlos M.</p>
+        </div>
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <p class="text-gray-600">
+            "Me encanta la variedad de productos. Siempre encuentro lo que
+            necesito."
+          </p>
+          <p class="mt-4 font-semibold text-gray-800">María L.</p>
+        </div>
+      </div>
+    </section>
 
-        function renderProducts(searchTerm = '') {
-            const productsDiv = document.getElementById('products');
-            const noResultsDiv = document.getElementById('no-results');
-            productsDiv.innerHTML = '';
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-lg font-bold mb-4">Luxora Market</h3>
+            <p class="text-gray-400">
+              Tu tienda en línea para productos de alta calidad.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Enlaces Rápidos</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="hover:underline">Inicio</a></li>
+              <li><a href="#" class="hover:underline">Productos</a></li>
+              <li><a href="#" class="hover:underline">Sobre Nosotros</a></li>
+              <li><a href="#" class="hover:underline">Contacto</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Soporte</h3>
+            <ul class="space-y-2">
+              <li>
+                <a href="#" class="hover:underline">Preguntas Frecuentes</a>
+              </li>
+              <li>
+                <a href="#" class="hover:underline">Política de Devoluciones</a>
+              </li>
+              <li>
+                <a href="#" class="hover:underline">Términos y Condiciones</a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-4">Contáctanos</h3>
+            <p class="text-gray-400">Email: soporte@luxoramarket.com</p>
+            <p class="text-gray-400">Teléfono: +51 123 456 789</p>
+          </div>
+        </div>
+        <div class="mt-8 text-center text-gray-400">
+          <p>© 2025 Luxora Market. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </footer>
 
-            const filteredProducts = products.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+    <script>
+      let products = JSON.parse(localStorage.getItem("products")) || [
+        {
+          id: 1,
+          name: "Auriculares Bluetooth",
+          price: 113.96,
+          image: "https://via.placeholder.com/150",
+          description: "Auriculares inalámbricos con gran calidad de sonido.",
+          category: "Electrónica",
+        },
+        {
+          id: 2,
+          name: "iPhone 13",
+          price: 1899.96,
+          image: "https://via.placeholder.com/150",
+          description: "Teléfono de última generación con conectividad 5G.",
+          category: "Teléfonos",
+        },
+        {
+          id: 3,
+          name: "Laptop Ultraligera",
+          price: 3799.96,
+          image: "https://via.placeholder.com/150",
+          description:
+            "Laptop potente y ligera para trabajo y entretenimiento.",
+          category: "Computadoras",
+        },
+        {
+          id: 4,
+          name: "Cámara Digital",
+          price: 759.96,
+          image: "https://via.placeholder.com/150",
+          description: "Cámara compacta con alta resolución.",
+          category: "Fotografía",
+        },
+        {
+          id: 5,
+          name: "Samsung Galaxy S22",
+          price: 1799.96,
+          image: "https://via.placeholder.com/150",
+          description: "Smartphone premium con cámara avanzada.",
+          category: "Teléfonos",
+        },
+        {
+          id: 6,
+          name: "Realme 9 Pro",
+          price: 999.96,
+          image: "https://via.placeholder.com/150",
+          description: "Teléfono con gran rendimiento y diseño moderno.",
+          category: "Teléfonos",
+        },
+        {
+          id: 7,
+          name: "Redmi Note 11",
+          price: 799.96,
+          image: "https://via.placeholder.com/150",
+          description: "Smartphone económico con excelentes características.",
+          category: "Teléfonos",
+        },
+        {
+          id: 8,
+          name: "Honor Magic 4",
+          price: 1299.96,
+          image: "https://via.placeholder.com/150",
+          description: "Teléfono con tecnología innovadora.",
+          category: "Teléfonos",
+        },
+        {
+          id: 9,
+          name: "Motorola Edge 30",
+          price: 1099.96,
+          image: "https://via.placeholder.com/150",
+          description: "Smartphone con pantalla OLED y 5G.",
+          category: "Teléfonos",
+        },
+      ];
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let currentCategory = "all";
+      let currentBrand = null;
 
-            if (filteredProducts.length === 0) {
-                noResultsDiv.classList.remove('hidden');
-            } else {
-                noResultsDiv.classList.add('hidden');
-                filteredProducts.forEach(product => {
-                    const productCard = `
-                        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                            <img src="${product.image}" alt="${product.name}" class="w-full h-64 object-contain mb-4">
-                            <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${product.name}</h3>
-                            <p class="text-sm text-gray-500">${product.category}</p>
-                            <p class="text-sm text-gray-600 line-clamp-3">${product.description}</p>
-                            <p class="text-xl font-bold text-gray-900 mt-2">S/ ${product.price.toFixed(2)}</p>
-                            <button class="w-full bg-[#F08804] text-white py-2 mt-3 rounded-md hover:bg-orange-600 transition-colors" onclick="addToCart(${product.id})">Añadir al Carrito</button>
-                        </div>
-                    `;
-                    productsDiv.innerHTML += productCard;
-                });
-            }
+      function saveCart() {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      }
+
+      function renderProducts(
+        searchTerm = "",
+        category = currentCategory,
+        brand = currentBrand
+      ) {
+        const productsDiv = document.getElementById("products");
+        const noResultsDiv = document.getElementById("no-results");
+        productsDiv.innerHTML = "";
+
+        let filteredProducts = products.filter((product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        if (category !== "all") {
+          filteredProducts = filteredProducts.filter(
+            (product) => product.category === category
+          );
         }
 
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const cartItem = cart.find(item => item.id === productId);
-            if (cartItem) {
-                cartItem.quantity++;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-            updateCart();
+        if (brand) {
+          filteredProducts = filteredProducts.filter((product) =>
+            product.name.toLowerCase().includes(brand.toLowerCase())
+          );
         }
 
-        function updateCart() {
-            const cartItemsDiv = document.getElementById('cart-items');
-            const cartCount = document.getElementById('cart-count');
-            const cartTotal = document.getElementById('cart-total');
-            cartItemsDiv.innerHTML = '';
-            let total = 0;
-            let count = 0;
-
-            cart.forEach(item => {
-                total += item.price * item.quantity;
-                count += item.quantity;
-                const cartItem = `
-                    <div class="flex justify-between items-center border-b py-3 text-sm">
-                        <div class="flex-1 pr-2">
-                            <p class="font-semibold text-gray-800 line-clamp-1">${item.name}</p>
-                            <p class="text-gray-600">S/ ${item.price.toFixed(2)} x ${item.quantity}</p>
-                        </div>
-                        <button class="text-red-600 hover:text-red-800 font-semibold" onclick="removeFromCart(${item.id})">Eliminar</button>
-                    </div>
-                `;
-                cartItemsDiv.innerHTML += cartItem;
-            });
-
-            cartCount.textContent = count;
-            cartTotal.textContent = total.toFixed(2);
+        if (filteredProducts.length === 0) {
+          noResultsDiv.classList.remove("hidden");
+        } else {
+          noResultsDiv.classList.add("hidden");
+          filteredProducts.forEach((product) => {
+            const productCard = `
+              <div class="product-card bg-white p-6 rounded-xl shadow-lg">
+                <img src="${product.image}" alt="${
+              product.name
+            }" class="w-full h-48 object-contain mb-4" />
+                <h3 class="text-lg font-semibold text-gray-800">${
+                  product.name
+                }</h3>
+                <p class="text-gray-500 text-sm">${product.category}</p>
+                <p class="text-gray-600 text-sm mt-1">${product.description}</p>
+                <p class="text-xl font-bold text-gray-800 mt-2">S/ ${product.price.toFixed(
+                  2
+                )}</p>
+                <button onclick="addToCart(${
+                  product.id
+                })" class="w-full mt-4 py-2 bg-yellow-400 text-white rounded-lg font-semibold hover:bg-yellow-500 transition">Añadir al Carrito</button>
+              </div>
+            `;
+            productsDiv.innerHTML += productCard;
+          });
         }
+      }
 
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCart();
+      function filterCategory(category) {
+        currentCategory = category;
+        currentBrand = null;
+        const brandFilterDiv = document.getElementById("brand-filter");
+        if (category === "Teléfonos") {
+          brandFilterDiv.classList.remove("hidden");
+        } else {
+          brandFilterDiv.classList.add("hidden");
         }
+        renderProducts(document.getElementById("search-input").value, category);
+        document.querySelectorAll(".category-filter button").forEach((btn) => {
+          btn.classList.remove("bg-indigo-600", "text-white");
+          btn.classList.add("bg-gray-200", "text-gray-800");
+        });
+        event.target.classList.remove("bg-gray-200", "text-gray-800");
+        event.target.classList.add("bg-indigo-600", "text-white");
+        document.querySelectorAll(".brand-filter button").forEach((btn) => {
+          btn.classList.remove("bg-indigo-100");
+          btn.classList.add("bg-gray-100");
+        });
+      }
 
-        function toggleCart() {
-            const cartDiv = document.getElementById('cart');
-            cartDiv.classList.toggle('translate-x-full');
-            cartDiv.classList.toggle('cart-open');
+      function filterBrand(brand) {
+        currentBrand = brand;
+        renderProducts(
+          document.getElementById("search-input").value,
+          currentCategory,
+          brand
+        );
+        document.querySelectorAll(".brand-filter button").forEach((btn) => {
+          btn.classList.remove("bg-indigo-100");
+          btn.classList.add("bg-gray-100");
+        });
+        event.target.closest("button").classList.remove("bg-gray-100");
+        event.target.closest("button").classList.add("bg-indigo-100");
+      }
+
+      function addToCart(productId) {
+        const product = products.find((p) => p.id === productId);
+        const cartItem = cart.find((item) => item.id === productId);
+        if (cartItem) {
+          cartItem.quantity++;
+        } else {
+          cart.push({ ...product, quantity: 1 });
         }
+        saveCart();
+        updateCart();
+      }
 
-        document.getElementById('checkout-btn').addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('El carrito está vacío.');
-                return;
-            }
-            document.getElementById('payment-message').classList.remove('hidden');
-            document.getElementById('payment-message').classList.add('fade-in');
-            cart = [];
-            updateCart();
-            toggleCart();
+      function removeFromCart(productId) {
+        cart = cart.filter((item) => item.id !== productId);
+        saveCart();
+        updateCart();
+      }
+
+      function updateCart() {
+        const cartItemsDiv = document.getElementById("cart-items");
+        const cartCount = document.getElementById("cart-count");
+        const cartTotal = document.getElementById("cart-total");
+        cartItemsDiv.innerHTML = "";
+        let total = 0;
+        let count = 0;
+
+        cart.forEach((item) => {
+          total += item.price * item.quantity;
+          count += item.quantity;
+          const cartItem = `
+            <div class="cart-card flex justify-between items-center py-3 border-b border-gray-200">
+              <div>
+                <p class="text-gray-800">${item.name}</p>
+                <p class="text-gray-600 text-sm">S/ ${item.price.toFixed(2)}</p>
+                <div class="flex items-center mt-2">
+                  <i class='bx bx-minus cursor-pointer text-gray-600' onclick='decreaseQuantity(${
+                    item.id
+                  })'></i>
+                  <span class="mx-3">${item.quantity}</span>
+                  <i class='bx bx-plus cursor-pointer text-gray-600' onclick='increaseQuantity(${
+                    item.id
+                  })'></i>
+                </div>
+              </div>
+              <button class="bx bx-trash text-red-500 hover:text-red-700" onclick="removeFromCart(${
+                item.id
+              })"></button>
+            </div>
+          `;
+          cartItemsDiv.innerHTML += cartItem;
         });
 
-        function closePaymentMessage() {
-            document.getElementById('payment-message').classList.add('hidden');
+        cartCount.textContent = count;
+        cartTotal.textContent = total.toFixed(2);
+      }
+
+      function increaseQuantity(productId) {
+        const cartItem = cart.find((item) => item.id === productId);
+        if (cartItem) {
+          cartItem.quantity++;
+          saveCart();
+          updateCart();
         }
+      }
 
-        // Evento de búsqueda
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const searchTerm = e.target.value;
-            renderProducts(searchTerm);
-        });
+      function decreaseQuantity(productId) {
+        const cartItem = cart.find((item) => item.id === productId);
+        if (cartItem && cartItem.quantity > 1) {
+          cartItem.quantity--;
+          saveCart();
+          updateCart();
+        }
+      }
 
-        // Inicializar
+      function toggleCart() {
+        const cartDiv = document.getElementById("cart");
+        cartDiv.classList.toggle("translate-x-full");
+        cartDiv.classList.toggle("cart-open");
+      }
+
+      function closeConfirmation() {
+        document
+          .getElementById("purchase-confirmation")
+          .classList.add("hidden");
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+        updateCart();
+      }
+
+      document.getElementById("search-input").addEventListener("input", (e) => {
+        renderProducts(e.target.value, currentCategory, currentBrand);
+      });
+
+      document
+        .getElementById("cart-close")
+        .addEventListener("click", toggleCart);
+
+      document.getElementById("checkout-btn").addEventListener("click", () => {
+        if (cart.length === 0) {
+          alert("El carrito está vacío.");
+          return;
+        }
+        localStorage.setItem("cart", JSON.stringify(cart));
+        window.location.href = "proceso.html";
+      });
+
+      window.addEventListener("load", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("purchase") === "success") {
+          document
+            .getElementById("purchase-confirmation")
+            .classList.remove("hidden");
+          setTimeout(closeConfirmation, 3000);
+        }
+        updateCart();
         renderProducts();
+      });
     </script>
-</body>
+  </body>
 </html>
