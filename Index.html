@@ -20,7 +20,7 @@
         <div class="container mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-bold">Tienda Estelar</h1>
             <div class="flex-1 mx-4">
-                <input type="text" placeholder="Buscar productos..." class="w-full p-2 rounded-l-md border-none focus:ring-2 focus:ring-[#F08804] text-gray-900" disabled>
+                <input id="search-input" type="text" placeholder="Buscar productos..." class="w-full p-2 rounded-l-md border-none focus:ring-2 focus:ring-[#F08804] text-gray-900">
             </div>
             <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="toggleCart()">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,6 +56,7 @@
     <!-- Productos -->
     <main class="container mx-auto p-6">
         <div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        <div id="no-results" class="hidden text-center text-gray-600 text-lg mt-6">No se encontraron productos.</div>
     </main>
 
     <script>
@@ -67,22 +68,33 @@
         ];
         let cart = [];
 
-        function renderProducts() {
+        function renderProducts(searchTerm = '') {
             const productsDiv = document.getElementById('products');
+            const noResultsDiv = document.getElementById('no-results');
             productsDiv.innerHTML = '';
-            products.forEach(product => {
-                const productCard = `
-                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <img src="${product.image}" alt="${product.name}" class="w-full h-64 object-contain mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${product.name}</h3>
-                        <p class="text-sm text-gray-500">${product.category}</p>
-                        <p class="text-sm text-gray-600 line-clamp-3">${product.description}</p>
-                        <p class="text-xl font-bold text-gray-900 mt-2">$${product.price.toFixed(2)}</p>
-                        <button class="w-full bg-[#F08804] text-white py-2 mt-3 rounded-md hover:bg-orange-600 transition-colors" onclick="addToCart(${product.id})">Añadir al Carrito</button>
-                    </div>
-                `;
-                productsDiv.innerHTML += productCard;
-            });
+
+            const filteredProducts = products.filter(product =>
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filteredProducts.length === 0) {
+                noResultsDiv.classList.remove('hidden');
+            } else {
+                noResultsDiv.classList.add('hidden');
+                filteredProducts.forEach(product => {
+                    const productCard = `
+                        <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-64 object-contain mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${product.name}</h3>
+                            <p class="text-sm text-gray-500">${product.category}</p>
+                            <p class="text-sm text-gray-600 line-clamp-3">${product.description}</p>
+                            <p class="text-xl font-bold text-gray-900 mt-2">$${product.price.toFixed(2)}</p>
+                            <button class="w-full bg-[#F08804] text-white py-2 mt-3 rounded-md hover:bg-orange-600 transition-colors" onclick="addToCart(${product.id})">Añadir al Carrito</button>
+                        </div>
+                    `;
+                    productsDiv.innerHTML += productCard;
+                });
+            }
         }
 
         function addToCart(productId) {
@@ -150,6 +162,13 @@
             document.getElementById('payment-message').classList.add('hidden');
         }
 
+        // Evento de búsqueda
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            renderProducts(searchTerm);
+        });
+
+        // Inicializar
         renderProducts();
     </script>
 </body>
