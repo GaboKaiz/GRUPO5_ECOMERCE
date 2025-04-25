@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Estelar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .cart-open { animation: slideIn 0.3s forwards; }
+        .fade-in { animation: fadeIn 0.5s forwards; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Encabezado -->
+    <header class="bg-[#131921] text-white p-4 sticky top-0 z-20 shadow-md">
+        <div class="container mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-bold">Tienda Estelar</h1>
+            <div class="flex-1 mx-4">
+                <input type="text" placeholder="Buscar productos..." class="w-full p-2 rounded-l-md border-none focus:ring-2 focus:ring-[#F08804] text-gray-900" disabled>
+            </div>
+            <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="toggleCart()">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-[#F08804] text-white rounded-full px-2 py-1 text-xs font-bold">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Carrito -->
+    <div id="cart" class="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl p-6 transform translate-x-full transition-transform duration-300 z-30">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">Carrito</h2>
+            <button onclick="toggleCart()" class="text-gray-600 hover:text-gray-800 text-xl font-bold">✕</button>
+        </div>
+        <div id="cart-items" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
+        <div class="mt-6 border-t pt-4">
+            <p class="text-lg font-bold text-gray-800">Total: $<span id="cart-total">0</span></p>
+            <button id="checkout-btn" class="w-full bg-[#00A862] text-white py-3 mt-4 rounded-md hover:bg-green-700 transition-colors font-semibold">Proceder al Pago</button>
+        </div>
+    </div>
+
+    <!-- Mensaje de pago -->
+    <div id="payment-message" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-md">
+            <h2 class="text-2xl font-bold text-[#00A862] mb-4">¡Pago Exitoso!</h2>
+            <p class="text-gray-600 mb-6">Gracias por tu compra. Recibirás un correo con los detalles.</p>
+            <button onclick="closePaymentMessage()" class="bg-[#131921] text-white py-2 px-6 rounded-md hover:bg-blue-900 transition-colors">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Productos -->
+    <main class="container mx-auto p-6">
+        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </main>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('products')) || [
+            { id: 1, name: "Auriculares Bluetooth", price: 29.99, image: "https://via.placeholder.com/150", description: "Auriculares inalámbricos con gran calidad de sonido.", category: "Electrónica" },
+            { id: 2, name: "Smartphone 5G", price: 499.99, image: "https://via.placeholder.com/150", description: "Teléfono de última generación con conectividad 5G.", category: "Teléfonos" },
+            { id: 3, name: "Laptop Ultraligera", price: 999.99, image: "https://via.placeholder.com/150", description: "Laptop potente y ligera para trabajo y entretenimiento.", category: "Computadoras" },
+            { id: 4, name: "Cámara Digital", price: 199.99, image: "https://via.placeholder.com/150", description: "Cámara compacta con alta resolución.", category: "Fotografía" },
+        ];
+        let cart = [];
+
+        function renderProducts() {
+            const productsDiv = document.getElementById('products');
+            productsDiv.innerHTML = '';
+            products.forEach(product => {
+                const productCard = `
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-64 object-contain mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${product.name}</h3>
+                        <p class="text-sm text-gray-500">${product.category}</p>
+                        <p class="text-sm text-gray-600 line-clamp-3">${product.description}</p>
+                        <p class="text-xl font-bold text-gray-900 mt-2">$${product.price.toFixed(2)}</p>
+                        <button class="w-full bg-[#F08804] text-white py-2 mt-3 rounded-md hover:bg-orange-600 transition-colors" onclick="addToCart(${product.id})">Añadir al Carrito</button>
+                    </div>
+                `;
+                productsDiv.innerHTML += productCard;
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                cartItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItemsDiv = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            cartItemsDiv.innerHTML = '';
+            let total = 0;
+            let count = 0;
+
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                count += item.quantity;
+                const cartItem = `
+                    <div class="flex justify-between items-center border-b py-3 text-sm">
+                        <div class="flex-1 pr-2">
+                            <p class="font-semibold text-gray-800 line-clamp-1">${item.name}</p>
+                            <p class="text-gray-600">$${item.price.toFixed(2)} x ${item.quantity}</p>
+                        </div>
+                        <button class="text-red-600 hover:text-red-800 font-semibold" onclick="removeFromCart(${item.id})">Eliminar</button>
+                    </div>
+                `;
+                cartItemsDiv.innerHTML += cartItem;
+            });
+
+            cartCount.textContent = count;
+            cartTotal.textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        function toggleCart() {
+            const cartDiv = document.getElementById('cart');
+            cartDiv.classList.toggle('translate-x-full');
+            cartDiv.classList.toggle('cart-open');
+        }
+
+        document.getElementById('checkout-btn').addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('El carrito está vacío.');
+                return;
+            }
+            document.getElementById('payment-message').classList.remove('hidden');
+            document.getElementById('payment-message').classList.add('fade-in');
+            cart = [];
+            updateCart();
+            toggleCart();
+        });
+
+        function closePaymentMessage() {
+            document.getElementById('payment-message').classList.add('hidden');
+        }
+
+        renderProducts();
+    </script>
+</body>
+</html>
