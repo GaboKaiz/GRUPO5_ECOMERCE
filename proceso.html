@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finalizar Compra - Luxora Market</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f7fafc;
+      }
+      .payment-method {
+        transition: all 0.3s ease;
+      }
+      .payment-method:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .payment-method.selected {
+        border-color: #00a862;
+        background-color: #f0fff4;
+      }
+      #map {
+        height: 300px;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        z-index: 0;
+      }
+      .card-input {
+        letter-spacing: 1px;
+      }
+      .card-input::placeholder {
+        letter-spacing: normal;
+      }
+      .pac-container {
+        z-index: 10000 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 8px 8px;
+      }
+      .pac-item {
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      .pac-item:hover {
+        background-color: #f3f4f6;
+      }
+      .pac-item-query {
+        font-size: 14px;
+        color: #1f2937;
+      }
+      .leaflet-control-geocoder-form {
+        width: 300px;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .modal-content {
+        animation: fadeIn 0.3s ease-out;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Finalizar Compra</h1>
+        <p class="text-gray-600 mt-2">
+          Complete sus datos para procesar el pedido
+        </p>
+      </div>
+      <div class="flex justify-between items-center mb-8 relative">
+        <div class="flex-1 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full bg-[#00A862] flex items-center justify-center text-white font-bold mb-2"
+          >
+            1
+          </div>
+          <span class="text-sm font-medium text-[#00A862]">Información</span>
+        </div>
+        <div class="h-1 flex-1 bg-[#00A862] mx-2"></div>
+        <div class="flex-1 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full bg-[#00A862] flex items-center justify-center text-white font-bold mb-2"
+          >
+            2
+          </div>
+          <span class="text-sm font-medium text-[#00A862]">Pago</span>
+        </div>
+        <div class="h-1 flex-1 bg-gray-300 mx-2"></div>
+        <div class="flex-1 flex flex-col items-center">
+          <div
+            class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold mb-2"
+          >
+            3
+          </div>
+          <span class="text-sm font-medium text-gray-500">Confirmación</span>
+        </div>
+      </div>
+      <form id="payment-form" class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Información Personal
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="nombre"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Nombre</label
+              >
+              <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                for="apellido"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Apellido</label
+              >
+              <input
+                type="text"
+                id="apellido"
+                name="apellido"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Correo Electrónico</label
+              >
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                for="telefono"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Teléfono</label
+              >
+              <input
+                type="tel"
+                id="telefono"
+                name="telefono"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Dirección de Envío
+          </h2>
+          <div class="mb-4">
+            <label
+              for="direccion"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Dirección</label
+            >
+            <div class="flex">
+              <input
+                type="text"
+                id="direccion"
+                name="direccion"
+                required
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+              <button
+                type="button"
+                id="buscar-direccion"
+                class="bg-[#00A862] text-white px-4 py-2 rounded-r-md hover:bg-green-700"
+              >
+                <i class="fas fa-map-marker-alt"></i>
+              </button>
+            </div>
+          </div>
+          <div id="map" class="mb-4"></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label
+                for="ciudad"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Ciudad</label
+              >
+              <input
+                type="text"
+                id="ciudad"
+                name="ciudad"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                for="region"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Región</label
+              >
+              <input
+                type="text"
+                id="region"
+                name="region"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label
+                for="codigo-postal"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Código Postal</label
+              >
+              <input
+                type="text"
+                id="codigo-postal"
+                name="codigo-postal"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Método de Pago
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div
+              class="payment-method border-2 border-gray-200 rounded-lg p-4 cursor-pointer"
+              data-method="yape"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mr-3"
+                >
+                  <img src="yape.png" alt="Yape" class="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 class="font-medium text-gray-800">Yape</h3>
+                  <p class="text-sm text-gray-500">Pago rápido y seguro</p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="payment-method border-2 border-gray-200 rounded-lg p-4 cursor-pointer"
+              data-method="visa"
+            >
+              <div class="flex items-center">
+                <div
+                  class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mr-3"
+                >
+                  <i class="fab fa-cc-visa text-2xl text-blue-800"></i>
+                </div>
+                <div>
+                  <h3 class="font-medium text-gray-800">Tarjeta Visa</h3>
+                  <p class="text-sm text-gray-500">
+                    Pago con tarjeta de crédito/débito
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="yape-form" class="hidden bg-blue-50 p-4 rounded-lg mb-4">
+            <div class="flex items-center mb-4">
+              <img src="yape.png" alt="Yape" class="w-12 h-12 mr-3" />
+              <div>
+                <h3 class="font-medium text-gray-800">Pago con Yape</h3>
+                <p class="text-sm text-gray-600">
+                  Escanea el código QR para completar el pago
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-center">
+              <div
+                class="bg-white p-4 rounded-lg shadow-sm mb-4 md:mb-0 md:mr-4"
+              >
+                <img
+                  id="yape-qr-code"
+                  src=""
+                  alt="Código QR Yape"
+                  class="w-40 h-40 mx-auto"
+                />
+                <p class="text-xs text-center mt-2 text-gray-500">
+                  ID: <span id="yape-transaction-id"></span>
+                </p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-600 mb-2">
+                  1. Abre la aplicación Yape en tu celular
+                </p>
+                <p class="text-sm text-gray-600 mb-2">
+                  2. Selecciona la opción "Pagar con Yape"
+                </p>
+                <p class="text-sm text-gray-600 mb-2">
+                  3. Escanea este código QR
+                </p>
+                <p class="text-sm text-gray-600">
+                  4. Confirma el pago de
+                  <span id="yape-amount" class="font-semibold"></span>
+                </p>
+              </div>
+            </div>
+            <div class="mt-4">
+              <label
+                for="yape-phone"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Número de teléfono registrado en Yape</label
+              >
+              <input
+                type="tel"
+                id="yape-phone"
+                name="yape-phone"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div id="visa-form" class="hidden bg-blue-50 p-4 rounded-lg">
+            <div class="flex items-center mb-4">
+              <i class="fab fa-cc-visa text-3xl text-blue-800 mr-3"></i>
+              <div>
+                <h3 class="font-medium text-gray-800">Pago con Tarjeta Visa</h3>
+                <p class="text-sm text-gray-600">
+                  Ingresa los datos de tu tarjeta
+                </p>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label
+                for="card-number"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Número de Tarjeta</label
+              >
+              <input
+                type="text"
+                id="card-number"
+                name="card-number"
+                placeholder="1234 5678 9012 3456"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent card-input"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label
+                  for="card-expiry"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >Fecha de Expiración</label
+                >
+                <input
+                  type="text"
+                  id="card-expiry"
+                  name="card-expiry"
+                  placeholder="MM/AA"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent card-input"
+                />
+              </div>
+              <div>
+                <label
+                  for="card-cvc"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                  >CVC</label
+                >
+                <input
+                  type="text"
+                  id="card-cvc"
+                  name="card-cvc"
+                  placeholder="123"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent card-input"
+                />
+              </div>
+            </div>
+            <div>
+              <label
+                for="card-name"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Nombre en la Tarjeta</label
+              >
+              <input
+                type="text"
+                id="card-name"
+                name="card-name"
+                placeholder="JUAN PEREZ"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00A862] focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Resumen del Pedido
+          </h2>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div id="order-items" class="mb-4"></div>
+            <div class="border-t pt-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Subtotal</span>
+                <span id="subtotal" class="font-medium">S/ 0.00</span>
+              </div>
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Envío</span>
+                <span id="shipping" class="font-medium">S/ 5.00</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold mt-4">
+                <span>Total</span>
+                <span id="total" class="text-[#00A862]">S/ 0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between">
+          <button
+            type="button"
+            id="volver-carrito"
+            class="px-6 py-3 border border-gray-300 rounded-md text-gray-700 font-medium mb-2 sm:mb-0 hover:bg-gray-100"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Volver al Carrito
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-3 bg-[#00A862] text-white rounded-md font-medium hover:bg-green-700 transition-colors"
+          >
+            Confirmar y Pagar <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+    <div
+      id="confirmation-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4 modal-content"
+      >
+        <div class="text-center mb-6">
+          <div
+            class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <i class="fas fa-check text-3xl text-[#00A862]"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">¡Pago Exitoso!</h2>
+          <p class="text-gray-600">
+            Gracias por tu compra. Hemos enviado los detalles a tu correo
+            electrónico.
+          </p>
+          <p class="text-sm text-gray-500 mt-2">
+            Redirigiéndote a la página principal en
+            <span id="countdown">5</span> segundos...
+          </p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <h3 class="font-medium text-gray-800 mb-2">Resumen de la Orden</h3>
+          <div id="confirmation-items" class="mb-3"></div>
+          <div class="border-t pt-3">
+            <div class="flex justify-between mb-1">
+              <span class="text-gray-600">Subtotal</span>
+              <span id="confirmation-subtotal" class="font-medium"
+                >S/ 0.00</span
+              >
+            </div>
+            <div class="flex justify-between mb-1">
+              <span class="text-gray-600">Envío</span>
+              <span id="confirmation-shipping" class="font-medium"
+                >S/ 5.00</span
+              >
+            </div>
+            <div class="flex justify-between font-bold mt-2">
+              <span>Total</span>
+              <span id="confirmation-total" class="text-[#00A862]"
+                >S/ 0.00</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="text-center">
+          <button
+            id="close-modal"
+            class="px-6 py-2 bg-[#131921] text-white rounded-md font-medium hover:bg-blue-900 transition-colors"
+          >
+            Volver a la Tienda Ahora
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script>
+      const cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+      function initOrderSummary() {
+        const orderItems = document.getElementById("order-items");
+        let subtotal = 0;
+        orderItems.innerHTML = "";
+        cartItems.forEach((item) => {
+          const itemTotal = item.price * item.quantity;
+          subtotal += itemTotal;
+          const itemElement = document.createElement("div");
+          itemElement.className = "flex justify-between mb-2";
+          itemElement.innerHTML = `
+                    <span class="text-gray-600">${item.name} x ${
+            item.quantity
+          }</span>
+                    <span class="font-medium">S/ ${itemTotal.toFixed(2)}</span>
+                `;
+          orderItems.appendChild(itemElement);
+        });
+        document.getElementById(
+          "subtotal"
+        ).textContent = `S/ ${subtotal.toFixed(2)}`;
+        document.getElementById("total").textContent = `S/ ${(
+          subtotal + 5
+        ).toFixed(2)}`;
+        document.getElementById("confirmation-items").innerHTML =
+          orderItems.innerHTML;
+        document.getElementById(
+          "confirmation-subtotal"
+        ).textContent = `S/ ${subtotal.toFixed(2)}`;
+        document.getElementById("confirmation-total").textContent = `S/ ${(
+          subtotal + 5
+        ).toFixed(2)}`;
+      }
+      document.querySelectorAll(".payment-method").forEach((method) => {
+        method.addEventListener("click", function () {
+          document.querySelectorAll(".payment-method").forEach((m) => {
+            m.classList.remove("selected");
+            m.classList.remove("border-[#00A862]");
+          });
+          this.classList.add("selected");
+          this.classList.add("border-[#00A862]");
+          const methodType = this.getAttribute("data-method");
+          document.getElementById("yape-form").classList.add("hidden");
+          document.getElementById("visa-form").classList.add("hidden");
+          document
+            .getElementById(`${methodType}-form`)
+            .classList.remove("hidden");
+        });
+      });
+      document
+        .getElementById("card-number")
+        .addEventListener("input", function (e) {
+          let value = e.target.value.replace(/\s+/g, "");
+          if (value.length > 0) {
+            value = value.match(new RegExp(".{1,4}", "g")).join(" ");
+          }
+          e.target.value = value;
+        });
+      document
+        .getElementById("card-expiry")
+        .addEventListener("input", function (e) {
+          let value = e.target.value.replace(/\D+/g, "");
+          if (value.length > 2) {
+            value = value.substring(0, 2) + "/" + value.substring(2, 4);
+          }
+          e.target.value = value;
+        });
+      document
+        .getElementById("card-cvc")
+        .addEventListener("input", function (e) {
+          e.target.value = e.target.value.replace(/\D+/g, "");
+        });
+      document.addEventListener("DOMContentLoaded", function () {
+        const map = L.map("map").setView([-12.0464, -77.0428], 12);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        }).addTo(map);
+        const marker = L.marker(map.getCenter(), { draggable: true }).addTo(
+          map
+        );
+        const geocoder = L.Control.geocoder({
+          defaultMarkGeocode: false,
+          position: "topright",
+          placeholder: "Buscar dirección...",
+          errorMessage: "Dirección no encontrada",
+        }).addTo(map);
+        geocoder.on("markgeocode", function (e) {
+          const { center, name, properties } = e.geocode;
+          map.setView(center, 17);
+          marker.setLatLng(center);
+          document.getElementById("direccion").value = name;
+          updateAddressFields(properties);
+        });
+        marker.on("dragend", function () {
+          const latlng = marker.getLatLng();
+          reverseGeocode(latlng);
+        });
+        document
+          .getElementById("buscar-direccion")
+          .addEventListener("click", function () {
+            const address = document.getElementById("direccion").value;
+            if (address) {
+              geocoder.geocode(address);
+            }
+          });
+        function reverseGeocode(latlng) {
+          fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latlng.lat}&lon=${latlng.lng}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("direccion").value =
+                data.display_name || "";
+              updateAddressFields(data.address);
+            })
+            .catch((error) => console.error("Error:", error));
+        }
+        function updateAddressFields(address) {
+          document.getElementById("ciudad").value =
+            address.city || address.town || address.village || "";
+          document.getElementById("region").value =
+            address.state || address.region || "";
+          document.getElementById("codigo-postal").value =
+            address.postcode || "";
+        }
+        initOrderSummary();
+        document.querySelector('[data-method="visa"]').click();
+        const volverCarrito = document.getElementById("volver-carrito");
+        if (volverCarrito) {
+          volverCarrito.addEventListener("click", function () {
+            console.log(
+              "Botón Volver al Carrito clicado, redirigiendo a index.html"
+            );
+            window.location.assign("index.html");
+          });
+        } else {
+          console.error("Elemento con id 'volver-carrito' no encontrado");
+        }
+      });
+      function generateYapeQR() {
+        const transactionId = generateTransactionId();
+        const amount = document.getElementById("total").textContent;
+        const qrData = encodeURIComponent(
+          `yape://payment?amount=${amount.replace(
+            "S/ ",
+            ""
+          )}&transactionId=${transactionId}`
+        );
+        document.getElementById(
+          "yape-qr-code"
+        ).src = `https://quickchart.io/qr?text=${qrData}&size=200`;
+        document.getElementById("yape-transaction-id").textContent =
+          transactionId;
+        document.getElementById("yape-amount").textContent = amount;
+      }
+      function generateTransactionId() {
+        return "YAPE-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+      }
+      document
+        .querySelector('[data-method="yape"]')
+        .addEventListener("click", generateYapeQR);
+      document
+        .getElementById("payment-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const selectedMethod = document.querySelector(
+            ".payment-method.selected"
+          );
+          if (!selectedMethod) {
+            alert("Por favor selecciona un método de pago");
+            return;
+          }
+          const method = selectedMethod.getAttribute("data-method");
+          if (method === "visa") {
+            const cardNumber = document
+              .getElementById("card-number")
+              .value.replace(/\s+/g, "");
+            const cardExpiry = document.getElementById("card-expiry").value;
+            const cardCvc = document.getElementById("card-cvc").value;
+            const cardName = document.getElementById("card-name").value;
+            if (
+              !cardNumber ||
+              cardNumber.length !== 16 ||
+              !/^\d+$/.test(cardNumber)
+            ) {
+              alert("Por favor ingresa un número de tarjeta válido");
+              return;
+            }
+            if (!cardExpiry || !/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+              alert("Por favor ingresa una fecha de expiración válida (MM/AA)");
+              return;
+            }
+            if (!cardCvc || cardCvc.length < 3 || !/^\d+$/.test(cardCvc)) {
+              alert("Por favor ingresa un CVC válido");
+              return;
+            }
+            if (!cardName) {
+              alert("Por favor ingresa el nombre en la tarjeta");
+              return;
+            }
+          }
+          document
+            .getElementById("confirmation-modal")
+            .classList.remove("hidden");
+          localStorage.removeItem("cart");
+          console.log("Iniciando redirección automática tras 5 segundos");
+          let countdown = 5;
+          const countdownElement = document.getElementById("countdown");
+          countdownElement.textContent = countdown;
+          setTimeout(function redirect() {
+            console.log("Redirigiendo a index.html");
+            document
+              .getElementById("confirmation-modal")
+              .classList.add("hidden");
+            window.location.assign("index.html");
+          }, 5000);
+          const interval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            if (countdown <= 0) {
+              clearInterval(interval);
+            }
+          }, 1000);
+        });
+      document
+        .getElementById("close-modal")
+        .addEventListener("click", function () {
+          console.log("Botón Cerrar Modal clicado, redirigiendo a index.html");
+          document.getElementById("confirmation-modal").classList.add("hidden");
+          window.location.assign("index.html");
+        });
+    </script>
+  </body>
+</html>
