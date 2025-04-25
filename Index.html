@@ -39,7 +39,7 @@
         </div>
         <div id="cart-items" class="space-y-4 max-h-[60vh] overflow-y-auto"></div>
         <div class="mt-6 border-t pt-4">
-            <p class="text-lg font-bold text-gray-800">Total: $<span id="cart-total">0</span></p>
+            <p class="text-lg font-bold text-gray-800">Total: S/ <span id="cart-total">0</span></p>
             <button id="checkout-btn" class="w-full bg-[#00A862] text-white py-3 mt-4 rounded-md hover:bg-green-700 transition-colors font-semibold">Proceder al Pago</button>
         </div>
     </div>
@@ -59,12 +59,12 @@
         <div id="no-results" class="hidden text-center text-gray-600 text-lg mt-6">No se encontraron productos.</div>
     </main>
 
-    <script>
+    <script src="Java.js">
         let products = JSON.parse(localStorage.getItem('products')) || [
-            { id: 1, name: "Auriculares Bluetooth", price: 29.99, image: "https://via.placeholder.com/150", description: "Auriculares inalámbricos con gran calidad de sonido.", category: "Electrónica" },
-            { id: 2, name: "Smartphone 5G", price: 499.99, image: "https://via.placeholder.com/150", description: "Teléfono de última generación con conectividad 5G.", category: "Teléfonos" },
-            { id: 3, name: "Laptop Ultraligera", price: 999.99, image: "https://via.placeholder.com/150", description: "Laptop potente y ligera para trabajo y entretenimiento.", category: "Computadoras" },
-            { id: 4, name: "Cámara Digital", price: 199.99, image: "https://via.placeholder.com/150", description: "Cámara compacta con alta resolución.", category: "Fotografía" },
+            { id: 1, name: "Auriculares Bluetooth", price: 113.96, image: "https://via.placeholder.com/150", description: "Auriculares inalámbricos con gran calidad de sonido.", category: "Electrónica" },
+            { id: 2, name: "Smartphone 5G", price: 1899.96, image: "https://via.placeholder.com/150", description: "Teléfono de última generación con conectividad 5G.", category: "Teléfonos" },
+            { id: 3, name: "Laptop Ultraligera", price: 3799.96, image: "https://via.placeholder.com/150", description: "Laptop potente y ligera para trabajo y entretenimiento.", category: "Computadoras" },
+            { id: 4, name: "Cámara Digital", price: 759.96, image: "https://via.placeholder.com/150", description: "Cámara compacta con alta resolución.", category: "Fotografía" },
         ];
         let cart = [];
 
@@ -88,7 +88,7 @@
                             <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${product.name}</h3>
                             <p class="text-sm text-gray-500">${product.category}</p>
                             <p class="text-sm text-gray-600 line-clamp-3">${product.description}</p>
-                            <p class="text-xl font-bold text-gray-900 mt-2">$${product.price.toFixed(2)}</p>
+                            <p class="text-xl font-bold text-gray-900 mt-2">S/ ${product.price.toFixed(2)}</p>
                             <button class="w-full bg-[#F08804] text-white py-2 mt-3 rounded-md hover:bg-orange-600 transition-colors" onclick="addToCart(${product.id})">Añadir al Carrito</button>
                         </div>
                     `;
@@ -123,7 +123,7 @@
                     <div class="flex justify-between items-center border-b py-3 text-sm">
                         <div class="flex-1 pr-2">
                             <p class="font-semibold text-gray-800 line-clamp-1">${item.name}</p>
-                            <p class="text-gray-600">$${item.price.toFixed(2)} x ${item.quantity}</p>
+                            <p class="text-gray-600">S/ ${item.price.toFixed(2)} x ${item.quantity}</p>
                         </div>
                         <button class="text-red-600 hover:text-red-800 font-semibold" onclick="removeFromCart(${item.id})">Eliminar</button>
                     </div>
